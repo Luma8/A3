@@ -194,11 +194,11 @@ def obter_estatisticas(
             "top_materia": top_materia
         }
 
-    def filter_group(gender, year, tech_interest_levels):
+    def filter_group(gender, year_substr, tech_interest_levels):
         return [
             a for a in all_avaliacoes 
             if a['genero'] == gender 
-            and a['ano_escolar'] == year 
+            and (a['ano_escolar'] and year_substr in str(a['ano_escolar']))
             and a['interesse_tecnologia'] in tech_interest_levels
         ]
 
@@ -212,16 +212,20 @@ def obter_estatisticas(
 
     perfis = {
         "tech": {
-            "homens_2ano": get_profile_stats(filter_group('Homem', '2º ano', tech_levels)),
-            "homens_3ano": get_profile_stats(filter_group('Homem', '3º ano', tech_levels)),
-            "mulheres_2ano": get_profile_stats(filter_group('Mulher', '2º ano', tech_levels)),
-            "mulheres_3ano": get_profile_stats(filter_group('Mulher', '3º ano', tech_levels)),
+            "homens_2ano": get_profile_stats(filter_group('Homem', '2', tech_levels)),
+            "homens_3ano": get_profile_stats(filter_group('Homem', '3', tech_levels)),
+            "mulheres_2ano": get_profile_stats(filter_group('Mulher', '2', tech_levels)),
+            "mulheres_3ano": get_profile_stats(filter_group('Mulher', '3', tech_levels)),
+            "nb_2ano": get_profile_stats(filter_group('Não binário', '2', tech_levels)),
+            "nb_3ano": get_profile_stats(filter_group('Não binário', '3', tech_levels)),
         },
         "humanas": {
-            "homens_2ano": get_profile_stats(filter_group('Homem', '2º ano', humanas_levels)),
-            "homens_3ano": get_profile_stats(filter_group('Homem', '3º ano', humanas_levels)),
-            "mulheres_2ano": get_profile_stats(filter_group('Mulher', '2º ano', humanas_levels)),
-            "mulheres_3ano": get_profile_stats(filter_group('Mulher', '3º ano', humanas_levels)),
+            "homens_2ano": get_profile_stats(filter_group('Homem', '2', humanas_levels)),
+            "homens_3ano": get_profile_stats(filter_group('Homem', '3', humanas_levels)),
+            "mulheres_2ano": get_profile_stats(filter_group('Mulher', '2', humanas_levels)),
+            "mulheres_3ano": get_profile_stats(filter_group('Mulher', '3', humanas_levels)),
+            "nb_2ano": get_profile_stats(filter_group('Não binário', '2', humanas_levels)),
+            "nb_3ano": get_profile_stats(filter_group('Não binário', '3', humanas_levels)),
         }
     }
 
