@@ -136,8 +136,8 @@ def obter_estatisticas(
     if not avaliacoes:
         return {"message": "Nenhuma avaliação encontrada com os filtros selecionados"}
     
-    # Converter para dicionários para facilitar acesso
-    avaliacoes_dicts = [a.dict() for a in avaliacoes]
+    # Já são dicionários, não precisa converter
+    avaliacoes_dicts = avaliacoes
     
     def contar_respostas(campo):
         respostas = [a[campo] for a in avaliacoes_dicts if a[campo]]
