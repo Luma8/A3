@@ -40,6 +40,14 @@ class AvaliacaoResponse(BaseModel):
     interesse_matematica: Optional[str] = None
     interesse_portugues: Optional[str] = None
     materia_preferida: Optional[str] = None
+    turno_preferencia: Optional[str] = None
+    contato_programacao: Optional[str] = None
+    gosta_jogos: Optional[str] = None
+    possui_videogame: Optional[str] = None
+    possui_computador: Optional[str] = None
+    possui_internet: Optional[str] = None
+    possui_celular: Optional[str] = None
+    possui_internet_celular: Optional[str] = None
 
 def calcular_idade(data_nascimento):
     if not data_nascimento or not isinstance(data_nascimento, datetime):
@@ -115,7 +123,15 @@ def listar_avaliacoes(
                     "interesse_desafios": row[13],
                     "interesse_matematica": row[14],
                     "interesse_portugues": row[15],
-                    "materia_preferida": row[16]
+                    "materia_preferida": row[16],
+                    "turno_preferencia": row[11],
+                    "contato_programacao": row[17],
+                    "gosta_jogos": row[18],
+                    "possui_videogame": row[19],
+                    "possui_computador": row[20],
+                    "possui_internet": row[21],
+                    "possui_celular": row[22],
+                    "possui_internet_celular": row[23]
                 })
         
         wb.close()
@@ -181,6 +197,18 @@ def obter_estatisticas(
             "matematica": contar_respostas("interesse_matematica"),
             "portugues": contar_respostas("interesse_portugues"),
             "materia_preferida": contar_respostas("materia_preferida")
+        },
+        "perfil_tecnologico": {
+            "turno_preferencia": contar_respostas("turno_preferencia"),
+            "contato_programacao": contar_respostas("contato_programacao"),
+            "gosta_jogos": contar_respostas("gosta_jogos"),
+            "dispositivos": {
+                "videogame": contar_respostas("possui_videogame"),
+                "computador": contar_respostas("possui_computador"),
+                "internet": contar_respostas("possui_internet"),
+                "celular": contar_respostas("possui_celular"),
+                "internet_celular": contar_respostas("possui_internet_celular")
+            }
         }
     }
 
