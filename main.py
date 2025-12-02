@@ -203,7 +203,12 @@ def obter_estatisticas(
         ]
 
     tech_levels = ['Muito interesse']
-    humanas_levels = ['Pouco interesse'] # Assumindo que pouco interesse em tech define o perfil de humanas neste contexto
+    humanas_levels = ['Pouco interesse', 'Algum interesse'] # Expandido para incluir Algum interesse
+
+    # Debug info para identificar problemas de match
+    unique_generos = list(set(a['genero'] for a in all_avaliacoes if a['genero']))
+    unique_anos = list(set(a['ano_escolar'] for a in all_avaliacoes if a['ano_escolar']))
+    unique_tech = list(set(a['interesse_tecnologia'] for a in all_avaliacoes if a['interesse_tecnologia']))
 
     perfis = {
         "tech": {
@@ -222,6 +227,12 @@ def obter_estatisticas(
 
     return {
         "total_participantes": len(avaliacoes),
+        "debug_info": {
+            "total_all": len(all_avaliacoes),
+            "unique_generos": unique_generos,
+            "unique_anos": unique_anos,
+            "unique_tech": unique_tech
+        },
         "filtros_aplicados": {
             "genero": genero,
             "ano_escolar": ano_escolar,
