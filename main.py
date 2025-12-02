@@ -35,6 +35,11 @@ class AvaliacaoResponse(BaseModel):
     avaliacao_tecnologias: Optional[str] = None
     avaliacao_compreensao: Optional[str] = None
     avaliacao_geral: Optional[str] = None
+    interesse_tecnologia: Optional[str] = None
+    interesse_desafios: Optional[str] = None
+    interesse_matematica: Optional[str] = None
+    interesse_portugues: Optional[str] = None
+    materia_preferida: Optional[str] = None
 
 def calcular_idade(data_nascimento):
     if not data_nascimento or not isinstance(data_nascimento, datetime):
@@ -105,7 +110,12 @@ def listar_avaliacoes(
                     "avaliacao_aplicacoes": row[25],
                     "avaliacao_tecnologias": row[26],
                     "avaliacao_compreensao": row[27],
-                    "avaliacao_geral": row[28]
+                    "avaliacao_geral": row[28],
+                    "interesse_tecnologia": row[12],
+                    "interesse_desafios": row[13],
+                    "interesse_matematica": row[14],
+                    "interesse_portugues": row[15],
+                    "materia_preferida": row[16]
                 })
         
         wb.close()
@@ -164,6 +174,13 @@ def obter_estatisticas(
             "uso_tecnologias": contar_respostas("avaliacao_tecnologias"),
             "compreensao_curso": contar_respostas("avaliacao_compreensao"),
             "experiencia_geral": contar_respostas("avaliacao_geral")
+        },
+        "interesses_areas": {
+            "tecnologia": contar_respostas("interesse_tecnologia"),
+            "desafios": contar_respostas("interesse_desafios"),
+            "matematica": contar_respostas("interesse_matematica"),
+            "portugues": contar_respostas("interesse_portugues"),
+            "materia_preferida": contar_respostas("materia_preferida")
         }
     }
 
