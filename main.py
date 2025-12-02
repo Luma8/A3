@@ -169,6 +169,57 @@ def obter_estatisticas(
         respostas = [a[campo] for a in avaliacoes_dicts if a[campo]]
         return dict(Counter(respostas))
 
+    # Lógica para Perfis
+    # Carregar TODOS os dados para gerar perfis (ignorando os filtros atuais da requisição para esta seção específica, 
+    # ou usamos os dados filtrados? O pedido implica criar perfis específicos, então melhor usar a base completa ou filtrar explicitamente)
+    # O ideal é que a seção de perfis seja calculada sobre a base total para comparação, mas se o usuário filtrar, talvez queira ver subconjuntos.
+    # Pelo pedido "criar a utlima seção onde vamos criar alguns perfis", parece algo fixo.
+    # Vou carregar todos os dados novamente para garantir que os perfis sejam globais.
+    
+    all_avaliacoes = listar_avaliacoes() # Sem filtros
+    
+    def get_profile_stats(filtered_evals):
+        if not filtered_evals:
+            return None
+        
+        turnos = [e['turno_preferencia'] for e in filtered_evals if e['turno_preferencia']]
+        materias = [e['materia_preferida'] for e in filtered_evals if e['materia_preferida']]
+        
+        top_turno = Counter(turnos).most_common(1)[0][0] if turnos else "N/A"
+        top_materia = Counter(materias).most_common(1)[0][0] if materias else "N/A"
+        
+        return {
+            "count": len(filtered_evals),
+            "top_turno": top_turno,
+            "top_materia": top_materia
+        }
+
+    def filter_group(gender, year, tech_interest_levels):
+        return [
+            a for a in all_avaliacoes 
+            if a['genero'] == gender 
+            and a['ano_escolar'] == year 
+            and a['interesse_tecnologia'] in tech_interest_levels
+        ]
+
+    tech_levels = ['Muito interesse']
+    humanas_levels = ['Pouco interesse'] # Assumindo que pouco interesse em tech define o perfil de humanas neste contexto
+
+    perfis = {
+        "tech": {
+            "homens_2ano": get_profile_stats(filter_group('Homem', '2º ano', tech_levels)),
+            "homens_3ano": get_profile_stats(filter_group('Homem', '3º ano', tech_levels)),
+            "mulheres_2ano": get_profile_stats(filter_group('Mulher', '2º ano', tech_levels)),
+            "mulheres_3ano": get_profile_stats(filter_group('Mulher', '3º ano', tech_levels)),
+        },
+        "humanas": {
+            "homens_2ano": get_profile_stats(filter_group('Homem', '2º ano', humanas_levels)),
+            "homens_3ano": get_profile_stats(filter_group('Homem', '3º ano', humanas_levels)),
+            "mulheres_2ano": get_profile_stats(filter_group('Mulher', '2º ano', humanas_levels)),
+            "mulheres_3ano": get_profile_stats(filter_group('Mulher', '3º ano', humanas_levels)),
+        }
+    }
+
     return {
         "total_participantes": len(avaliacoes),
         "filtros_aplicados": {
@@ -178,6 +229,7 @@ def obter_estatisticas(
             "idade_min": idade_min,
             "idade_max": idade_max
         },
+        "perfis_especificos": perfis,
         "demografia": {
             "genero": contar_respostas("genero"),
             "ano_escolar": contar_respostas("ano_escolar"),
