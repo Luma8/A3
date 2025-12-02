@@ -1,7 +1,7 @@
 import os
 from openpyxl import Workbook, load_workbook
 
-FILE_NAME = "Formulário de Avaliação da Oficina(1-51) (1).xlsx"
+FILE_NAME = "dados.xlsx"
 
 def salvar_avaliacao_excel(dados: dict):
     if not os.path.exists(FILE_NAME):

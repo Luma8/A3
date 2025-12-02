@@ -18,7 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-FILE_NAME = "Formulário de Avaliação da Oficina(1-51) (1).xlsx"
+FILE_NAME = "dados.xlsx"
 
 # Modelo de resposta baseado nas colunas reais do Excel
 class AvaliacaoResponse(BaseModel):
