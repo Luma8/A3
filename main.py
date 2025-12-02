@@ -62,6 +62,7 @@ def listar_avaliacoes(
 ):
     """Lista todas as avaliações do Excel com filtros opcionais"""
     if not os.path.exists(FILE_NAME):
+        print(f"ERRO: Arquivo não encontrado: {FILE_NAME}")
         return []
     
     try:
@@ -121,6 +122,9 @@ def obter_estatisticas(
     idade_max: Optional[int] = Query(None)
 ):
     """Retorna estatísticas das respostas de avaliação com suporte a filtros"""
+    if not os.path.exists(FILE_NAME):
+        return {"message": f"Erro: Arquivo de dados '{FILE_NAME}' não encontrado no servidor."}
+
     avaliacoes = listar_avaliacoes(
         genero=genero, 
         ano_escolar=ano_escolar, 
