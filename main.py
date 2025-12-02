@@ -191,13 +191,21 @@ def obter_estatisticas(
         turnos = [e['turno_preferencia'] for e in filtered_evals if e['turno_preferencia']]
         materias = [e['materia_preferida'] for e in filtered_evals if e['materia_preferida']]
         
+        # Calcular porcentagem de contato com programação
+        contato = [e['contato_programacao'] for e in filtered_evals if e['contato_programacao']]
+        total_contato = len(contato)
+        # Considera "Sim, já pratiquei" como contato positivo
+        sim_contato = sum(1 for c in contato if 'Sim' in str(c))
+        pct_contato = (sim_contato / total_contato * 100) if total_contato > 0 else 0
+        
         top_turno = Counter(turnos).most_common(1)[0][0] if turnos else "N/A"
         top_materia = Counter(materias).most_common(1)[0][0] if materias else "N/A"
         
         return {
             "count": len(filtered_evals),
             "top_turno": top_turno,
-            "top_materia": top_materia
+            "top_materia": top_materia,
+            "pct_contato": round(pct_contato, 1)
         }
 
     def filter_group(gender, year_substr, tech_interest_levels):
