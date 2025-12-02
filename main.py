@@ -6,6 +6,7 @@ import os
 from typing import List, Optional, Dict, Any
 from collections import Counter
 from datetime import datetime
+import statistics
 
 app = FastAPI(title="API Avaliação de Oficina")
 
@@ -234,8 +235,15 @@ def obter_estatisticas(
         }
     }
 
+    # Estatísticas Descritivas
+    idades = [a["idade"] for a in avaliacoes_dicts if a["idade"] is not None]
+    media_idade = statistics.mean(idades) if idades else 0
+    desvio_padrao_idade = statistics.stdev(idades) if len(idades) > 1 else 0
+
     return {
         "total_participantes": len(avaliacoes),
+        "media_idade": round(media_idade, 1),
+        "desvio_padrao_idade": round(desvio_padrao_idade, 1),
         "debug_info": {
             "total_all": len(all_avaliacoes),
             "unique_generos": unique_generos,
