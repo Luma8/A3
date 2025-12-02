@@ -65,15 +65,7 @@ def root():
         ]
     }
 
-@app.get("/avaliacoes", response_model=List[AvaliacaoResponse])
-def listar_avaliacoes(
-    genero: Optional[str] = Query(None, description="Filtrar por gênero"),
-    ano_escolar: Optional[str] = Query(None, description="Filtrar por ano escolar"),
-    universidade_pretendida: Optional[str] = Query(None, description="Filtrar por tipo de universidade (Pública/Privada)"),
-    idade_min: Optional[int] = Query(None, description="Idade mínima"),
-    idade_max: Optional[int] = Query(None, description="Idade máxima")
-):
-    """Lista todas as avaliações do Excel com filtros opcionais"""
+def ler_dados_excel():
     if not os.path.exists(FILE_NAME):
         print(f"ERRO: Arquivo não encontrado: {FILE_NAME}")
         return []
@@ -84,27 +76,11 @@ def listar_avaliacoes(
         
         avaliacoes = []
         
-        # Mapeamento de colunas (baseado na inspeção do arquivo)
-        # ID: 0, Hora conclusão: 2, Nome: 4, Data Nasc: 6, Gênero: 7, Ano: 8, Univ: 10
-        # Perguntas de avaliação: 24, 25, 26, 27, 28
-        
         for row in ws.iter_rows(min_row=2, values_only=True):
             if row[0] is not None:
                 data_nasc = row[6]
                 idade = calcular_idade(data_nasc)
                 
-                # Aplicar filtros
-                if genero and row[7] != genero:
-                    continue
-                if ano_escolar and row[8] != ano_escolar:
-                    continue
-                if universidade_pretendida and row[10] != universidade_pretendida:
-                    continue
-                if idade_min and (idade is None or idade < idade_min):
-                    continue
-                if idade_max and (idade is None or idade > idade_max):
-                    continue
-
                 avaliacoes.append({
                     "id": row[0],
                     "data_conclusao": str(row[2]) if row[2] else None,
@@ -137,7 +113,36 @@ def listar_avaliacoes(
         wb.close()
         return avaliacoes
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro ao ler arquivo: {str(e)}")
+        print(f"Erro ao ler arquivo: {str(e)}")
+        return []
+
+@app.get("/avaliacoes", response_model=List[AvaliacaoResponse])
+def listar_avaliacoes(
+    genero: Optional[str] = Query(None, description="Filtrar por gênero"),
+    ano_escolar: Optional[str] = Query(None, description="Filtrar por ano escolar"),
+    universidade_pretendida: Optional[str] = Query(None, description="Filtrar por tipo de universidade (Pública/Privada)"),
+    idade_min: Optional[int] = Query(None, description="Idade mínima"),
+    idade_max: Optional[int] = Query(None, description="Idade máxima")
+):
+    """Lista todas as avaliações do Excel com filtros opcionais"""
+    todos_dados = ler_dados_excel()
+    
+    # Aplicar filtros
+    filtrados = []
+    for a in todos_dados:
+        if genero and a['genero'] != genero:
+            continue
+        if ano_escolar and a['ano_escolar'] != ano_escolar:
+            continue
+        if universidade_pretendida and a['universidade_pretendida'] != universidade_pretendida:
+            continue
+        if idade_min and (a['idade'] is None or a['idade'] < idade_min):
+            continue
+        if idade_max and (a['idade'] is None or a['idade'] > idade_max):
+            continue
+        filtrados.append(a)
+        
+    return filtrados
 
 @app.get("/estatisticas")
 def obter_estatisticas(
@@ -176,7 +181,7 @@ def obter_estatisticas(
     # Pelo pedido "criar a utlima seção onde vamos criar alguns perfis", parece algo fixo.
     # Vou carregar todos os dados novamente para garantir que os perfis sejam globais.
     
-    all_avaliacoes = listar_avaliacoes() # Sem filtros
+    all_avaliacoes = ler_dados_excel() # Sem filtros
     
     def get_profile_stats(filtered_evals):
         if not filtered_evals:
