@@ -7,6 +7,7 @@ from typing import List, Optional, Dict, Any
 from collections import Counter
 from datetime import datetime
 import statistics
+import unicodedata
 
 app = FastAPI(title="API Avaliação de Oficina")
 
@@ -49,6 +50,39 @@ class AvaliacaoResponse(BaseModel):
     possui_internet: Optional[str] = None
     possui_celular: Optional[str] = None
     possui_internet_celular: Optional[str] = None
+
+def normalizar_texto(texto):
+    if not texto:
+        return ""
+    return ''.join(c for c in unicodedata.normalize('NFD', texto.lower()) if unicodedata.category(c) != 'Mn')
+
+def normalizar_materia(materia):
+    if not materia:
+        return None
+    
+    m_norm = normalizar_texto(materia).strip()
+    
+    if not m_norm:
+        return None
+
+    # Mapeamento de palavras-chave para categorias padronizadas
+    if 'matematica' in m_norm: return 'Matemática'
+    if 'historia' in m_norm or 'history' in m_norm: return 'História'
+    if 'portugues' in m_norm: return 'Português'
+    if 'biologia' in m_norm or 'biology' in m_norm: return 'Biologia'
+    if 'quimica' in m_norm: return 'Química'
+    if 'fisica' in m_norm and 'educacao' not in m_norm: return 'Física'
+    if 'educacao fisica' in m_norm: return 'Educação Física'
+    if 'ingles' in m_norm: return 'Inglês'
+    if 'geografia' in m_norm: return 'Geografia'
+    if 'filosofia' in m_norm: return 'Filosofia'
+    if 'sociologia' in m_norm: return 'Sociologia'
+    if 'informatica' in m_norm or 'computacao' in m_norm: return 'Informática'
+    if 'artes' in m_norm: return 'Artes'
+    
+    if 'nao sei' in m_norm: return 'Indeciso'
+    
+    return materia.strip().capitalize()
 
 def calcular_idade(data_nascimento):
     if not data_nascimento or not isinstance(data_nascimento, datetime):
@@ -175,6 +209,25 @@ def obter_estatisticas(
         respostas = [a[campo] for a in avaliacoes_dicts if a[campo]]
         return dict(Counter(respostas))
 
+    def contar_respostas_materia():
+        respostas_normalizadas = []
+        for a in avaliacoes_dicts:
+            raw = a.get('materia_preferida')
+            if not raw:
+                continue
+            
+            # Split by comma or ' e ' to handle multiple subjects
+            # Normalize separators
+            normalized_raw = raw.replace(' e ', ',').replace(' E ', ',').replace('.', '')
+            parts = [p.strip() for p in normalized_raw.split(',')]
+            
+            for part in parts:
+                norm = normalizar_materia(part)
+                if norm:
+                    respostas_normalizadas.append(norm)
+                    
+        return dict(Counter(respostas_normalizadas))
+
     # Lógica para Perfis
     # Carregar TODOS os dados para gerar perfis (ignorando os filtros atuais da requisição para esta seção específica, 
     # ou usamos os dados filtrados? O pedido implica criar perfis específicos, então melhor usar a base completa ou filtrar explicitamente)
@@ -189,7 +242,18 @@ def obter_estatisticas(
             return None
         
         turnos = [e['turno_preferencia'] for e in filtered_evals if e['turno_preferencia']]
-        materias = [e['materia_preferida'] for e in filtered_evals if e['materia_preferida']]
+        
+        # Normalize materias for profile stats too
+        materias = []
+        for e in filtered_evals:
+            raw = e.get('materia_preferida')
+            if raw:
+                normalized_raw = raw.replace(' e ', ',').replace(' E ', ',').replace('.', '')
+                parts = [p.strip() for p in normalized_raw.split(',')]
+                for part in parts:
+                    norm = normalizar_materia(part)
+                    if norm:
+                        materias.append(norm)
         
         # Calcular porcentagem de contato com programação
         contato = [e['contato_programacao'] for e in filtered_evals if e['contato_programacao']]
@@ -284,7 +348,7 @@ def obter_estatisticas(
             "desafios": contar_respostas("interesse_desafios"),
             "matematica": contar_respostas("interesse_matematica"),
             "portugues": contar_respostas("interesse_portugues"),
-            "materia_preferida": contar_respostas("materia_preferida")
+            "materia_preferida": contar_respostas_materia()
         },
         "perfil_tecnologico": {
             "turno_preferencia": contar_respostas("turno_preferencia"),
