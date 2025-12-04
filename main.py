@@ -114,6 +114,11 @@ def ler_dados_excel():
         for row in ws.iter_rows(min_row=2, values_only=True):
             if row[0] is not None:
                 data_nasc = row[6]
+                
+                # Filtrar datas de nascimento inválidas (ex: ano >= 2025)
+                if isinstance(data_nasc, datetime) and data_nasc.year >= 2025:
+                    continue
+
                 idade = calcular_idade(data_nasc)
                 
                 avaliacoes.append({
